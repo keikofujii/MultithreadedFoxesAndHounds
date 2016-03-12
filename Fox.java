@@ -4,11 +4,7 @@ import java.util.concurrent.Phaser;
 /**
  * Foxes can display themselves
  */
-// Passive about being eaten
-// If find neighboring empty cell that has another fox as neighbor 
-// and cll has at most one Hound as a neighbor (sleeping or not)
-// then new Fox is born (only one Fox)
-// If eaten while checking, then update Field
+
 public class Fox extends FieldOccupant 
 { 
    public Fox(int i, int j, Phaser phaser)
@@ -45,5 +41,18 @@ public class Fox extends FieldOccupant
        
        // Arrive and wait for the rest of the objects
        getPhaser().arriveAndAwaitAdvance(); 
+       
+       // Run forever, or until we're terminated 
+       while (true)
+       {
+           
+           // See if a neighboring cell has another Fox as neighbor
+           
+           // Make sure that neighbor has at most one Hound as neighbor
+           
+           // If both are true then give birth to one fox 
+           
+           // Sleep
+       }
    }
 }

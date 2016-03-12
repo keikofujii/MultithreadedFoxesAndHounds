@@ -19,7 +19,7 @@ public class Field
     */
    public Field(int width, int height) 
    {
-      p_occupants = new FieldOccupant[width][height];
+      p_occupants = new Cell[width][height];
    } // Field
 
    
@@ -48,7 +48,7 @@ public class Field
     *  @param y is the y-coordinate of the cell to place a mammal in.
     *  @param fieldOccupant is the occupant to place.
     */
-   public void setOccupantAt(int x, int y, FieldOccupant fieldOccupant) 
+   public void setOccupantAt(int x, int y, Cell fieldOccupant) 
    {
       p_occupants[normalizeIndex(x, WIDTH_INDEX)]
                 [normalizeIndex(y, !WIDTH_INDEX)] = fieldOccupant;
@@ -61,7 +61,7 @@ public class Field
     *
     *  @return occupant of the cell (or null if unoccupied)
     */
-   public FieldOccupant getOccupantAt(int x, int y) 
+   public Cell getOccupantAt(int x, int y) 
    {
       return p_occupants[normalizeIndex(x, WIDTH_INDEX)]
                        [normalizeIndex(y, !WIDTH_INDEX)];
@@ -76,7 +76,7 @@ public class Field
     */
    public boolean isOccupied(int x, int y) 
    {
-      return getOccupantAt(x,y) != null;
+      return getOccupantAt(x,y).getOccupant() != null;
    } // isOccupied
 
 
@@ -84,7 +84,8 @@ public class Field
     * @return a collection of the occupants of cells adjacent to the
     * given cell; collection does not include null objects
     */
-   public Set<FieldOccupant> getNeighborsOf(int x, int y)
+   // Return a priority queue? 
+   public Set<Cell> getNeighborsOf(int x, int y)
    {
       // For any cell there are 8 neighbors - left, right, above, below,
       // and the four diagonals. Define a collection of offset pairs that 
@@ -92,7 +93,7 @@ public class Field
       final int[][] indexOffsets = { {0,1}, {1,0}, {0,-1}, {-1, 0}, {1,1}, 
                                      {1, -1}, {-1, 1}, {-1, -1}
                                    };
-      Set<FieldOccupant> neighbors = new HashSet<FieldOccupant>();
+      Set<Cell> neighbors = new HashSet<Cell>();
 
 
       // Iterate over the set of offsets, adding them to the x and y
@@ -148,7 +149,7 @@ public class Field
     *  Define any variables associated with a Field object here.  These
     *  variables MUST be private.
     */
-   private FieldOccupant[][] p_occupants;
+   private Cell[][] p_occupants;
 
    // Used in index normalizing method to distinguish between x and y
    // indices

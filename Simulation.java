@@ -35,7 +35,7 @@ public class Simulation {
                // Get the color of the object in that cell and set the cell color
                if (theField.isOccupied(j,i))
                {
-                  graphicsContext.setColor(theField.getOccupantAt(j,i).getDisplayColor());       
+                  graphicsContext.setColor(theField.getOccupantAt(j,i).getOccupant().getDisplayColor());       
                }
                else
                {
@@ -62,7 +62,7 @@ public class Simulation {
             {
                if (theField.isOccupied(j,i))
                {
-                  System.out.print(theField.getOccupantAt(j,i)+"|");
+                  System.out.print(theField.getOccupantAt(j,i).getOccupant()+"|");
                }
                else
                {
@@ -101,6 +101,7 @@ public class Simulation {
       Field theField = null;
       FieldOccupant tempFieldOccupant;
       AtomicBoolean drawField = new AtomicBoolean(false);
+      Cell tempCell;
 
       // If we attach a GUI to this program, these objects will hold
       // references to the GUI elements
@@ -186,8 +187,10 @@ public class Simulation {
                 
                 tempFieldOccupant.start();
                 
+                tempCell = new Cell(i, j, tempFieldOccupant);
+                
                 // Tell the field where the new object is
-                theField.setOccupantAt(i, j, tempFieldOccupant);
+                theField.setOccupantAt(i, j, tempCell);
             } 
             // If a random number is less than or equal to the probability of
             // adding a hound, then place a hound. Note that if a fox
@@ -200,8 +203,14 @@ public class Simulation {
                 
                 tempFieldOccupant.start();
                 
+                tempCell = new Cell(i, j, tempFieldOccupant);
+                
                 // Tell the field where the new object is
-                theField.setOccupantAt(i, j, tempFieldOccupant);
+                theField.setOccupantAt(i, j, tempCell);
+            }
+            else
+            {
+                theField.setOccupantAt(i, j, new Cell(i, j));
             }
             
          } // for
