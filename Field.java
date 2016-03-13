@@ -1,5 +1,8 @@
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Vector;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  *  The Field class defines an object that models a field full of foxes and
@@ -20,6 +23,7 @@ public class Field
    public Field(int width, int height) 
    {
       p_occupants = new Cell[width][height];
+      p_drawField = new AtomicBoolean(true);
    } // Field
 
    
@@ -85,7 +89,7 @@ public class Field
     * given cell; collection does not include null objects
     */
    // Return a priority queue? 
-   public Set<Cell> getNeighborsOf(int x, int y)
+   public ArrayList<Cell> getNeighborsOf(int x, int y)
    {
       // For any cell there are 8 neighbors - left, right, above, below,
       // and the four diagonals. Define a collection of offset pairs that 
@@ -93,7 +97,7 @@ public class Field
       final int[][] indexOffsets = { {0,1}, {1,0}, {0,-1}, {-1, 0}, {1,1}, 
                                      {1, -1}, {-1, 1}, {-1, -1}
                                    };
-      Set<Cell> neighbors = new HashSet<Cell>();
+      ArrayList<Cell> neighbors = new ArrayList<Cell>();
 
 
       // Iterate over the set of offsets, adding them to the x and y
@@ -145,7 +149,19 @@ public class Field
    }
 
 
-   /**
+   public AtomicBoolean getDrawField()
+{
+    return p_drawField;
+}
+
+
+public void setDrawField(boolean drawField)
+{
+    p_drawField.set(drawField);
+}
+
+
+/**
     *  Define any variables associated with a Field object here.  These
     *  variables MUST be private.
     */
@@ -154,5 +170,6 @@ public class Field
    // Used in index normalizing method to distinguish between x and y
    // indices
    private final static boolean WIDTH_INDEX = true;
+   private AtomicBoolean p_drawField;
 
 }

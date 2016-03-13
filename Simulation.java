@@ -86,7 +86,7 @@ public class Simulation {
    /**
     *  Main reads the parameters and performs the simulation and animation.
     */
-   public static void main(String[] args) throws InterruptedException 
+   public static void main(String[] args) 
    {
       /**
        *  Default parameters.  (You may change these if you wish.)
@@ -100,7 +100,6 @@ public class Simulation {
       Random randomGenerator = new Random();      
       Field theField = null;
       FieldOccupant tempFieldOccupant;
-      AtomicBoolean drawField = new AtomicBoolean(false);
       Cell tempCell;
 
       // If we attach a GUI to this program, these objects will hold
@@ -183,7 +182,7 @@ public class Simulation {
             if (randomGenerator.nextGaussian() <= probabilityFox) 
             {
                 // Create a new Thread to put in the field
-                tempFieldOccupant = new Fox(i, j, phaser);
+                tempFieldOccupant = new Fox(i, j, phaser, theField);
                 
                 tempFieldOccupant.start();
                 
@@ -199,7 +198,7 @@ public class Simulation {
             else if (randomGenerator.nextFloat() <= probabilityHound) 
             {   
                 // Create a new Thread to put in the field
-                tempFieldOccupant = new Hound(i, j, phaser);
+                tempFieldOccupant = new Hound(i, j, phaser, theField);
                 
                 tempFieldOccupant.start();
                 
@@ -216,14 +215,7 @@ public class Simulation {
          } // for
       } // for
 
-      // deregister self and allow threads to start
-      phaser.arriveAndDeregister();
-
-      synchronized(drawField)
-      {
-          drawField.set(true);
-          drawField.notify();
-      }
+      
 
       // If we're in graphics mode, then create the frame, canvas, 
       // and window. If not in graphics mode, these will remain null
@@ -242,21 +234,41 @@ public class Simulation {
          windowFrame.add(drawingCanvas);
          graphicsContext = drawingCanvas.getGraphics();
       } // if 
+
+      try
+    {
+        Thread.sleep(100);
+    } catch (InterruptedException e)
+    {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+    }
+     
+      // deregister self and allow threads to start
+      phaser.arriveAndDeregister();
       
       // Loop infinitely, checking to see if we need to redraw the field
       while (true) 
       {                                          
-         synchronized(drawField)
+         synchronized(theField.getDrawField())
          {
-             while(!drawField.get())
+             while(!theField.getDrawField().get())
              {
-                 drawField.wait();
+                 try
+                {
+                    theField.getDrawField().wait();
+                } catch (InterruptedException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
              }
              
              drawField(graphicsContext, theField);
-             drawField.set(false);
+             theField.setDrawField(false);
              // Draw the current state 
          }
+         System.out.println(theField.getDrawField());
       }
 
    } // main

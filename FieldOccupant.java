@@ -14,11 +14,12 @@ import java.util.concurrent.Phaser;
  */
 public abstract class FieldOccupant extends Thread
 {
-    public FieldOccupant(int i, int j, Phaser phaser)
+    public FieldOccupant(int i, int j, Phaser phaser, Field theField)
     {
         p_xCoord = i;
         p_yCoord = j;
         p_phaser = phaser;
+        p_theField = theField;
     }
 
     /**
@@ -31,8 +32,24 @@ public abstract class FieldOccupant extends Thread
     {
         return p_phaser;
     }
+    
+    public int getXCoord()
+    {
+        return p_xCoord;
+    }
+
+    public int getYCoord()
+    {
+        return p_yCoord;
+    }
+    
+    public Field getField()
+    {
+        return p_theField;
+    }
 
     private int p_xCoord;
     private int p_yCoord;
     private Phaser p_phaser;
+    Field p_theField;
 }
