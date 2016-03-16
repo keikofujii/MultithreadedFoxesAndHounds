@@ -51,18 +51,15 @@ public class Fox extends FieldOccupant
         
         try
         {
-            // Register the new object
-            getPhaser().register();
-
             // Arrive and wait for the rest of the objects
-            getPhaser().arriveAndAwaitAdvance();
+            getPhaser().awaitAdvance(0);
             
             // should get rid of this
             Thread.sleep(1000);
       
             
             // Run forever, or until we're terminated
-            while (true)
+            while (true && !Thread.interrupted())
             {
                 i = 0;
                 j = 0;
@@ -71,7 +68,7 @@ public class Fox extends FieldOccupant
                 foxesFound = 0;
                 
                 neighborCells = p_theField.getNeighborsOf(getXCoord(), getYCoord());
-
+                
                 // Iterate through all neighboring cells and all neighbors of
                 // neighboring cells
                 // Keep looking while you haven't found a soulmate and the soulmate
@@ -119,6 +116,7 @@ public class Fox extends FieldOccupant
                 if (foxesFound >= 2 && houndCount <= 1)
                 {
                     i--;
+                   
                     synchronized (neighborCells.get(i))
                     {
                         // **** while or if?
@@ -129,6 +127,7 @@ public class Fox extends FieldOccupant
                         // we were looking at is still empty
                         if (neighborCells.get(i).getOccupant() == null)
                         {
+                            
                             // Birth a fox
                             neighborCells.get(i).setOccupant(
                                     new Fox(neighborCells.get(i).getXCoord(),
@@ -136,18 +135,22 @@ public class Fox extends FieldOccupant
                                             getPhaser(), getField()));
                             
                             neighborCells.get(i).getOccupant().start();
-                            
                             // Make the field draw again since there's been a change
                             synchronized (getField().getDrawField())
                             {
                                 getField().setDrawField(true);
                                 getField().getDrawField().notify();
                             }
+
+                            
                         }
+                        
                     }
+                    
+
                 }
 
-                   
+                System.out.println("Sleep fox");
                 Thread.sleep(random
                         .nextInt((MAX_SLEEP_TIME - MIN_SLEEP_TIME) + 1)
                         + MIN_SLEEP_TIME);
@@ -158,12 +161,15 @@ public class Fox extends FieldOccupant
         {
             // We were eaten. Which is unfortunate.
             System.out.println("Fox died");
-            getField().getOccupantAt(getXCoord(), getYCoord()).setOccupant(null);
-            // Make the field draw again since there's been a change
-            synchronized (getField().getDrawField())
+            synchronized(getField().getOccupantAt(getXCoord(), getYCoord()))
             {
-                getField().setDrawField(true);
-                getField().getDrawField().notify();
+                getField().getOccupantAt(getXCoord(), getYCoord()).setOccupant(null);
+                // Make the field draw again since there's been a change
+                synchronized (getField().getDrawField())
+                {
+                    getField().setDrawField(true);
+                    getField().getDrawField().notify();
+                }
             }
         }
     }

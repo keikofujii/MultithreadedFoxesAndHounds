@@ -268,7 +268,6 @@ public class Simulation {
              theField.setDrawField(false);
              // Draw the current state 
          }
-         System.out.println(theField.getDrawField());
       }
 
    } // main

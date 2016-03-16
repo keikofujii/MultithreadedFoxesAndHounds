@@ -1,7 +1,7 @@
 /**
  * This class describes a cell in the Foxes and Hounds field
  */
-public class Cell
+public class Cell implements Comparable<Cell>
 {
     /**
      * Constructor for Cell class
@@ -47,11 +47,62 @@ public class Cell
         return p_occupant;
     }
 
-    public void setOccupant(FieldOccupant p_occupant)
+    public void setOccupant(FieldOccupant occupant)
     {
-        this.p_occupant = p_occupant;
+        p_occupant = occupant;
     }
 
+    /**
+     * Compares this object with the specified object for order. Returns 
+     * a negative integer, zero, or a positive integer as this object is 
+     * less than, equal to, or greater than the specified object.
+     * 
+     * Comparator is based on the X coordinate and Y coordinate of the 
+     * cell
+     * 
+     * Cells that have a higher Y coordinate have higher priority, with
+     * ties being broken by the X coordinate (higher coordinate has 
+     * higher priority)
+     * 
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    @Override
+    public int compareTo(Cell o)
+    {
+        // Default to having the elements equal
+        int compare = 0;
+        
+        // If this Y coordinate is greater, then this object has
+        // higher priority
+        if (getYCoord() > o.getYCoord())
+        {
+            compare = 1;
+        }
+        // Else if the specified object's Y coordinate is greater, then
+        // it has higher priority
+        else if (o.getYCoord() > getYCoord())
+        {
+            compare = -1;
+        }
+        // Else Y Coords are equal, now look at the X coords
+        else
+        {
+            // If this object's X coordinate is greater, then it has
+            // greater priority
+            if (getXCoord() > o.getXCoord())
+            {
+                compare = 1;
+            }
+            // Else if the specified object's X coordinate is greater
+            // then it has greater priority
+            else if (o.getXCoord() > getXCoord())
+            {
+                compare = -1;
+            }
+        }
+        
+        return compare;
+    }
 
     private int p_xCoord;
     private int p_yCoord;
