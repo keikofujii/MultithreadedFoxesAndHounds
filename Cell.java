@@ -32,21 +32,37 @@ public class Cell implements Comparable<Cell>
         p_occupant = null;
     }
     
+    /**
+     * A method to get the x coordinate of the cell
+     * @return the x coordinate of the cell
+     */
     public int getXCoord()
     {
         return p_xCoord;
     }
 
+    /**
+     * A method to get the y coordinate of the cell
+     * @return the y coordinate of the cell
+     */
     public int getYCoord()
     {
         return p_yCoord;
     }
 
+    /**
+     * A method to get the occupant of the cell
+     * @return the occupant of the cell
+     */
     public FieldOccupant getOccupant()
     {
         return p_occupant;
     }
 
+    /**
+     * A method to set the occupant of the cell
+     * @param occupant the value to set the occupant to
+     */
     public void setOccupant(FieldOccupant occupant)
     {
         p_occupant = occupant;

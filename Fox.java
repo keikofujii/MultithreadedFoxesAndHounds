@@ -4,14 +4,23 @@ import java.util.Random;
 import java.util.concurrent.Phaser;
 
 /**
- * Foxes can display themselves
+ * This class describes the Fox object for multithreaded Foxes and Hounds
  */
 
 public class Fox extends FieldOccupant
 {
-    public Fox(int i, int j, Phaser phaser, Field theField)
+    /**
+     * The constructor for the FieldOccupant
+     * 
+     * @param xCoord the X coordinate for the field occupant
+     * @param yCoord the Y coordinate for the field occupant
+     * @param phaser the phaser that the field occupant will wait for to 
+     * start
+     * @param theField the field that the field occupant is located in
+     */
+    public Fox(int xCoord, int yCoord, Phaser phaser, Field theField)
     {
-        super(i, j, phaser, theField);
+        super(xCoord, yCoord, phaser, theField);
     }
 
     /**
@@ -134,7 +143,9 @@ public class Fox extends FieldOccupant
                                             neighborCells.get(i).getYCoord(),
                                             getPhaser(), getField()));
                             
+                            // Start the new thread
                             neighborCells.get(i).getOccupant().start();
+                            
                             // Make the field draw again since there's been a change
                             synchronized (getField().getDrawField())
                             {
@@ -153,16 +164,14 @@ public class Fox extends FieldOccupant
                 Thread.sleep(random
                         .nextInt((MAX_SLEEP_TIME - MIN_SLEEP_TIME) + 1)
                         + MIN_SLEEP_TIME);
-
+                
             }
         }
         catch (InterruptedException e)
         {
             // We were eaten. Which is unfortunate.
-            System.out.println("Fox died");
-            synchronized(getField().getOccupantAt(getXCoord(), getYCoord()))
+            synchronized(getField().getCellAt(getXCoord(), getYCoord()))
             {
-                getField().getOccupantAt(getXCoord(), getYCoord()).setOccupant(null);
                 // Make the field draw again since there's been a change
                 synchronized (getField().getDrawField())
                 {

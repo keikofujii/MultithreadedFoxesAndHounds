@@ -4,14 +4,25 @@ import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.concurrent.Phaser;
 
-/**
- * Hounds can display themsevles. They also get hungry
+/***** Question
+ * Do we have to format cause of indents?? It's going to look terrible
+ * My hounds are sleeping for longer than I think? 
  */
 
+/**
+ * This class describes the Hound object for Multithreaded Foxes and 
+ * Hounds
+ */
 public class Hound extends FieldOccupant
 {
     /**
-     * Create a hound
+     * The constructor for the FieldOccupant
+     * 
+     * @param xCoord the X coordinate for the field occupant
+     * @param yCoord the Y coordinate for the field occupant
+     * @param phaser the phaser that the field occupant will wait for to 
+     * start
+     * @param theField the field that the field occupant is located in
      */
     public Hound(int i, int j, Phaser phaser, Field theField)
     {
@@ -96,7 +107,6 @@ public class Hound extends FieldOccupant
         ArrayList<Cell> neighboringFoxes;
         ArrayList<Cell> neighboringHounds;
         PriorityQueue<Cell> cellsToLock;
-        boolean hasHoundNeighbors = false;
         int randomFoxIndex;
         Random random = new Random();
         long sleepyTime;
@@ -118,7 +128,6 @@ public class Hound extends FieldOccupant
                 neighboringHounds = new ArrayList<Cell>();
                 cellsToLock = new PriorityQueue<Cell>();
                 
-                hasHoundNeighbors = false;
                 actionAttempted = false;
 
                 // Get the neighbor cells
@@ -186,7 +195,7 @@ public class Hound extends FieldOccupant
                                 // to lock first
                                 // Will eventually lock
                                 // Ourselves
-                                cellsToLock.add(getField().getOccupantAt(getXCoord(), getYCoord()));
+                                cellsToLock.add(getField().getCellAt(getXCoord(), getYCoord()));
                                 
                                 // The fox we plan to eat
                                 cellsToLock.add(neighboringFoxes.get(randomFoxIndex));
@@ -216,7 +225,6 @@ public class Hound extends FieldOccupant
                                             {
                                                 // Eat!!!
                                                 eats();
-                                                System.out.println("Eat fox");
                                                 
                                                 // Kill the fox thread
                                                 neighboringFoxes.get(randomFoxIndex)
@@ -250,7 +258,6 @@ public class Hound extends FieldOccupant
                                                                 .getOccupant().start();
                                                     } // if hound is still there
                                                     
-                                                    System.out.println("Baby hound");
                                                 } // synchronied
                                                 
                     
@@ -273,7 +280,7 @@ public class Hound extends FieldOccupant
                                 // to lock first
                                 // Will eventually lock
                                 // Ourselves
-                                cellsToLock.add(getField().getOccupantAt(getXCoord(), getYCoord()));
+                                cellsToLock.add(getField().getCellAt(getXCoord(), getYCoord()));
                                 
                                 // The fox we plan to eat
                                 cellsToLock.add(neighboringFoxes.get(randomFoxIndex));
@@ -297,7 +304,7 @@ public class Hound extends FieldOccupant
                                         {
                                             // Eat!!!
                                             eats();
-                                            System.out.println("Eat fox");
+
                                             
                                             // Kill the fox thread
                                             neighboringFoxes.get(randomFoxIndex)
@@ -331,7 +338,6 @@ public class Hound extends FieldOccupant
                                                             .getOccupant().start();
                                                 } // if hound is still there
                                                 
-                                                System.out.println("Baby hound");
                                             } // synchronied
                                             
                 
@@ -381,9 +387,6 @@ public class Hound extends FieldOccupant
                                     && neighborsOfNeighbors.get(j) != 
                                     getField().getOccupantAt(getXCoord(), getYCoord()))*/
                             {
-                                // Not the same object?? Mulstiple threads/cells? 
-                                System.out.println(neighborsOfNeighbors.get(j));
-                                System.out.println(getField().getOccupantAt(getXCoord(), getYCoord()));
                                 // We've found another hound neighbor to
                                 // mate with
                             
@@ -426,7 +429,7 @@ public class Hound extends FieldOccupant
                                 // Get the null cell
                                 cellsToLock.add(neighborCells.get(0));
                                 // Lock ourselves
-                                cellsToLock.add(getField().getOccupantAt(getXCoord(), getYCoord()));
+                                cellsToLock.add(getField().getCellAt(getXCoord(), getYCoord()));
                                 // Lock the hound we want to breed with
                                 cellsToLock.add(neighboringHounds.get(0));
                                 
@@ -472,25 +475,28 @@ public class Hound extends FieldOccupant
         
                                                         
                                                     } // if still empty cell
+                                                    
+                                                    // EAT
+                                                    eats();
+                                                    
+                                                    // Kill the fox thread
+                                                    neighboringFoxes.get(randomFoxIndex)
+                                                            .getOccupant().interrupt();
+                                                    
+                                                    // Set fox to be null on field
+                                                    neighboringFoxes.get(randomFoxIndex).setOccupant(null);
+                                                    
+                                                    // Signal the field to redraw itself
+                                                    synchronized (getField().
+                                                            getDrawField())
+                                                    {
+                                                        getField().setDrawField(true);
+                                                        getField().getDrawField().notify();
+                                                    } // synchronize draw field
+                                                    
                                                 } // sychronize empty cell 
                                                 
-                                                // EAT
-                                                eats();
                                                 
-                                                // Kill the fox thread
-                                                neighboringFoxes.get(randomFoxIndex)
-                                                        .getOccupant().interrupt();
-                                                
-                                                // Set fox to be null on field
-                                                neighboringFoxes.get(randomFoxIndex).setOccupant(null);
-                                                
-                                                // Signal the field to redraw itself
-                                                synchronized (getField().
-                                                        getDrawField())
-                                                {
-                                                    getField().setDrawField(true);
-                                                    getField().getDrawField().notify();
-                                                } // synchronize draw field
                                             }
                                         }
           
@@ -507,28 +513,31 @@ public class Hound extends FieldOccupant
 
                 // Get the random sleep time for the hound
                 sleepyTime = (long) random
-                        .nextInt((MAX_SLEEP_TIME - MIN_SLEEP_TIME) + 1)
+                        .nextInt(MAX_SLEEP_TIME - MIN_SLEEP_TIME)
                         + MIN_SLEEP_TIME;
 
                 // Sleep
                 Thread.sleep(sleepyTime);
 
                 // Wake up and check to see if we've died of starvation
-                if (getHungrier(sleepyTime / (long) 1000.0))
+                if (getHungrier(sleepyTime))
                 {
                     // If we've died, kill the thread
                     Thread.currentThread().interrupt();
                 }
                 
             }
+            getField().getCellAt(getXCoord(), 
+                    getYCoord()).setOccupant(null);
+            
+            
             
         } catch(InterruptedException e)
         {
-            synchronized (getField().getOccupantAt(getXCoord(), 
+            synchronized (getField().getCellAt(getXCoord(), 
                     getYCoord()))
             {
-                System.out.println("Hound death");
-                getField().getOccupantAt(getXCoord(), 
+                getField().getCellAt(getXCoord(), 
                         getYCoord()).setOccupant(null);
                 
             }
@@ -542,7 +551,7 @@ public class Hound extends FieldOccupant
     }
 
     // Default starve time for Hounds
-    public static final float DEFAULT_STARVE_TIME = 3;
+    public static final long DEFAULT_STARVE_TIME = 3000;
     // Class variable for all hounds
     private static float p_houndStarveTime = DEFAULT_STARVE_TIME;
 

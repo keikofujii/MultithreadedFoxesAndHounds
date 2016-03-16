@@ -4,20 +4,23 @@ import java.util.concurrent.Phaser;
 /**
  * Abstract parent class for objects that can occupy a cell in the Field
  */
-// Will need to ask Field for its position
-// Will sleep a random amount of time from .75 - 1.25 seconds
-// When they wake they'll perform the appropriate actions then sleep again
-/**
- * @param i
- *            the x coordinate that the occupant is located at
- * 
- */
+
 public abstract class FieldOccupant extends Thread
 {
-    public FieldOccupant(int i, int j, Phaser phaser, Field theField)
+    /**
+     * The constructor for the FieldOccupant
+     * 
+     * @param xCoord the X coordinate for the field occupant
+     * @param yCoord the Y coordinate for the field occupant
+     * @param phaser the phaser that the field occupant will wait for to 
+     * start
+     * @param theField the field that the field occupant is located in
+     */
+    public FieldOccupant(int xCoord, int yCoord, Phaser phaser, 
+            Field theField)
     {
-        p_xCoord = i;
-        p_yCoord = j;
+        p_xCoord = xCoord;
+        p_yCoord = yCoord;
         p_phaser = phaser;
         p_theField = theField;
     }
@@ -28,21 +31,37 @@ public abstract class FieldOccupant extends Thread
      */
     abstract public Color getDisplayColor();
 
+    /**
+     * A method to get the phaser for this field occupant
+     * @return the phaser that the field occupant will wait for to start
+     */
     public Phaser getPhaser()
     {
         return p_phaser;
     }
     
+    /**
+     * A method to get the x coordinate of the occupant
+     * @return the x coordinate of the occupant
+     */
     public int getXCoord()
     {
         return p_xCoord;
     }
 
+    /**
+     * A method to get the y coordinate of the occupant
+     * @return the y coordinate of the occupant
+     */
     public int getYCoord()
     {
         return p_yCoord;
     }
     
+    /**
+     * A method to get the field for the occupant
+     * @return the field that the occupant is located in
+     */
     public Field getField()
     {
         return p_theField;
