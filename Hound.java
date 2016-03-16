@@ -4,10 +4,6 @@ import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.concurrent.Phaser;
 
-/***** Question
- * Do we have to format cause of indents?? It's going to look terrible
- * My hounds are sleeping for longer than I think? 
- */
 
 /**
  * This class describes the Hound object for Multithreaded Foxes and 

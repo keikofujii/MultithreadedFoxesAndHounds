@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.concurrent.Phaser;
 
@@ -51,10 +52,13 @@ public class Fox extends FieldOccupant
         int MAX_SLEEP_TIME = 1250;
         ArrayList<Cell> neighborCells;
         ArrayList<Cell> neighborsOfNeighbors;
-        int foxesFound = 0;
+
+        ArrayList<Cell> neighboringFoxes;
         int i;
         int j;
         int houndCount = 0;
+        int randomFoxIndex;
+        PriorityQueue<Cell> cellsToLock;
         
         Random random = new Random();
         
@@ -74,20 +78,22 @@ public class Fox extends FieldOccupant
                 j = 0;
                 // Reset hound count for each neighboring cell that we look at
                 houndCount = 0;
-                foxesFound = 0;
-                
+                neighboringFoxes = new ArrayList<Cell>();
+                cellsToLock = new PriorityQueue<Cell>();
                 neighborCells = p_theField.getNeighborsOf(getXCoord(), getYCoord());
                 
                 // Iterate through all neighboring cells and all neighbors of
                 // neighboring cells
-                // Keep looking while you haven't found a soulmate and the soulmate
+                // Keep looking while the cell in question
                 // isn't surrounded by more than one hound
-                while (foxesFound < 2 && houndCount <= 1
-                        && i < neighborCells.size())
+                // and while it doesn't have more than 2 neighboring
+                // foxes
+                while (neighboringFoxes.size() < 2 && houndCount <= 1 && i < neighborCells.size())
                 {
-                    // Reset hound count for each neighboring cell that we look at
+                    // Reset hound count and neighboring foxes for each 
+                    // neighboring cell that we look at
                     houndCount = 0;
-                    foxesFound = 0;
+                    neighboringFoxes = new ArrayList<Cell>();
 
                     // Look at all neighbors of neighbor if the neighbor is empty
                     if (neighborCells.get(i).getOccupant() == null)
@@ -97,14 +103,16 @@ public class Fox extends FieldOccupant
                         neighborsOfNeighbors = p_theField.getNeighborsOf(neighborCells
                                 .get(i).getXCoord(), neighborCells.get(i).getYCoord());
                         
+                        // Iterate through all the neighbors and 
+                        // keep track of what type of animal they are
                         while (j < neighborsOfNeighbors.size())
                         {
-                            // Need to synchronize?
-                            // If it's a fox (hopefully a cute one), then they're a good
-                            // dating prospect
+                            // If it's a fox (hopefully a cute one), 
+                            // then they're a good
+                            // dating prospect if they're not us
                             if (neighborsOfNeighbors.get(j).getOccupant() instanceof Fox)
                             {
-                                foxesFound++;
+                                neighboringFoxes.add(neighborsOfNeighbors.get(j));
                             }
                             // Keep track of how many hounds we have
                             else if (neighborsOfNeighbors.get(j).getOccupant() instanceof Hound)
@@ -122,41 +130,65 @@ public class Fox extends FieldOccupant
                 // See if a neighboring cell has another Fox as neighbor
                 // Make sure that neighbor has at most one Hound as neighbor
                 // If both are true then give birth to one fox
-                if (foxesFound >= 2 && houndCount <= 1)
+                if (neighboringFoxes.size() >= 2 && houndCount <= 1)
                 {
+                    // decrement because before we exited the while loop
+                    // we incremented
                     i--;
-                   
-                    synchronized (neighborCells.get(i))
+                    
+                    // Get a random Fox from the list
+                    randomFoxIndex = random
+                            .nextInt(neighboringFoxes.size());
+                
+                    // Get the null cell
+                    cellsToLock.add(neighborCells.get(i));
+                    // Lock ourselves
+                    cellsToLock.add(getField().getCellAt(getXCoord(), getYCoord()));
+                    // Lock the hound we want to breed with
+                    cellsToLock.add(neighboringFoxes.get(randomFoxIndex));
+                    
+                    // get all the locks
+                    synchronized (cellsToLock.poll())
                     {
-                        // **** while or if?
-                        // Since we broke out of the while loop once we found a
-                        // successful fox match, then we can use i to get the
-                        // square that we want to breed in
-                        // Check to make sure first, though that the square
-                        // we were looking at is still empty
-                        if (neighborCells.get(i).getOccupant() == null)
+                        synchronized (cellsToLock.poll())
                         {
-                            
-                            // Birth a fox
-                            neighborCells.get(i).setOccupant(
-                                    new Fox(neighborCells.get(i).getXCoord(),
-                                            neighborCells.get(i).getYCoord(),
-                                            getPhaser(), getField()));
-                            
-                            // Start the new thread
-                            neighborCells.get(i).getOccupant().start();
-                            
-                            // Make the field draw again since there's been a change
-                            synchronized (getField().getDrawField())
+                            synchronized (cellsToLock.poll())
                             {
-                                getField().setDrawField(true);
-                                getField().getDrawField().notify();
+                                // Since we broke out of the while loop once we found a
+                                // successful fox match, then we can use i to get the
+                                // square that we want to breed in
+                                // Check to make sure first, though that the square
+                                // we were looking at is still empty
+                                if (neighborCells.get(i).getOccupant() == null)
+                                {
+                                    // If the occupant that we want to 
+                                    // mate with is still a Fox
+                                    // then have a baby
+                                    if (neighboringFoxes.get(randomFoxIndex).getOccupant() instanceof Fox)
+                                    {
+                                        // Birth a fox
+                                        neighborCells.get(i).setOccupant(
+                                                new Fox(neighborCells.get(i).getXCoord(),
+                                                        neighborCells.get(i).getYCoord(),
+                                                        getPhaser(), getField()));
+                                        
+                                        // Start the new thread
+                                        neighborCells.get(i).getOccupant().start();
+                                        
+                                        // Make the field draw again since there's been a change
+                                        synchronized (getField().getDrawField())
+                                        {
+                                            getField().setDrawField(true);
+                                            getField().getDrawField().notify();
+                                        }
+                                    }
+                                    
+                                }
+                                
                             }
-
-                            
                         }
-                        
                     }
+                    
                     
 
                 }
