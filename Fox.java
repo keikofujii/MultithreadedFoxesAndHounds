@@ -150,7 +150,6 @@ public class Fox extends FieldOccupant
 
                 }
 
-                System.out.println("Sleep fox");
                 Thread.sleep(random
                         .nextInt((MAX_SLEEP_TIME - MIN_SLEEP_TIME) + 1)
                         + MIN_SLEEP_TIME);

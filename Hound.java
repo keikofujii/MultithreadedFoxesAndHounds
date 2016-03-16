@@ -127,7 +127,7 @@ public class Hound extends FieldOccupant
                 
                 while (!actionAttempted && k < neighborCells.size())
                 {
-                 // If a Hound finds any of its neighbors is a Fox, then
+                    // If a Hound finds any of its neighbors is a Fox, then
                     // it should choose a random neighboring Fox and
                     // if the chosen Fox has another Hound as neighbor, then
                     // a new well-fed Hound is birthed in the cell occupied
@@ -170,55 +170,147 @@ public class Hound extends FieldOccupant
                                 // If we find a neighbor that's a hound,
                                 // keep track of it
                                 if (neighborsOfNeighbors.get(j).getOccupant() 
-                                        instanceof Hound)
+                                        instanceof Hound
+                                        && neighborsOfNeighbors.get(j).getXCoord() != 
+                                        getXCoord() && neighborsOfNeighbors.get(j).getYCoord() != 
+                                                getYCoord())
                                 {
                                     neighboringHounds.add(neighborsOfNeighbors.get(j));
                                 } // if
                                 j++;
                             } // while
-
-                            // Prioritize the cells to figure out what
-                            // to lock first
                             
-                            
-                            // Lock ourselves
-                            synchronized (getField().getOccupantAt(getXCoord(), getYCoord()))
+                            if (neighboringHounds.size() > 0)
                             {
+                                // Prioritize the cells to figure out what
+                                // to lock first
+                                // Will eventually lock
+                                // Ourselves
+                                cellsToLock.add(getField().getOccupantAt(getXCoord(), getYCoord()));
                                 
-                                // Since at this point, we're locking, 
-                                // then this means we've chosen to 
-                                // attempt an action. 
-                                actionAttempted = true;
+                                // The fox we plan to eat
+                                cellsToLock.add(neighboringFoxes.get(randomFoxIndex));
                                 
-                                // We want to lock the fox cell so no
-                                // one else can match it
-                                synchronized (neighboringFoxes.get(randomFoxIndex))
+                                // The hound to potentially mate with
+                                cellsToLock.add(neighboringHounds.get(0));
+                                
+                                // Lock the first cell
+                                synchronized (cellsToLock.poll())
                                 {
+                                    // Since at this point, we're locking, 
+                                    // then this means we've chosen to 
+                                    // attempt an action. 
+                                    actionAttempted = true;
                                     
-                                    // Make sure that there's still a fox in 
-                                    // the cell
-                                    if (neighboringFoxes.get(randomFoxIndex)
-                                            .getOccupant() instanceof Fox)
+                                    // Lock the second cell
+                                    synchronized (cellsToLock.poll())
                                     {
-                                        // Eat!!!
-                                        eats();
-                                        System.out.println("Eat fox");
                                         
-                                        // Kill the fox thread
-                                        neighboringFoxes.get(randomFoxIndex)
-                                                .getOccupant().interrupt();
-                                        
-                                        // Remove fox from the field 
-                                        neighboringFoxes.get(randomFoxIndex).setOccupant(null);
-
-                                        // If there is a hound to mate with, 
-                                        // make a baby
-                                        if (neighboringHounds.size() > 0)
+                                        // Lock the third cell
+                                        synchronized (cellsToLock.poll())
                                         {
-                                            // Pick a hound and hope it's 
-                                            // still there
-                                            synchronized (neighboringHounds.get(0))
+                                            // Make sure that there's still a fox in 
+                                            // the cell
+                                            if (neighboringFoxes.get(randomFoxIndex)
+                                                    .getOccupant() instanceof Fox)
                                             {
+                                                // Eat!!!
+                                                eats();
+                                                System.out.println("Eat fox");
+                                                
+                                                // Kill the fox thread
+                                                neighboringFoxes.get(randomFoxIndex)
+                                                        .getOccupant().interrupt();
+                                                
+                                                // Remove fox from the field 
+                                                neighboringFoxes.get(randomFoxIndex).setOccupant(null);
+        
+                                                // If there is a hound to mate with, 
+                                                // make a baby
+                                                if (neighboringHounds.size() > 0)
+                                                {
+                                                    
+                                                    if (neighboringHounds.get(0).getOccupant() instanceof Hound)
+                                                    {
+                                                        // Create a new baby hound
+                                                        neighboringFoxes.get(randomFoxIndex)
+                                                                .setOccupant(
+                                                                 new Hound(
+                                                                 neighboringFoxes
+                                                                 .get(randomFoxIndex)
+                                                                 .getXCoord(),
+                                                                 neighboringFoxes
+                                                                 .get(randomFoxIndex)
+                                                                 .getYCoord(),
+                                                                 getPhaser(),
+                                                                 getField()));
+
+                                                        // Start the new thread
+                                                        neighboringFoxes.get(randomFoxIndex)
+                                                                .getOccupant().start();
+                                                    } // if hound is still there
+                                                    
+                                                    System.out.println("Baby hound");
+                                                } // synchronied
+                                                
+                    
+                                            } // if 
+
+                                            // Signal the field to redraw itself
+                                            synchronized (getField().getDrawField())
+                                            {
+                                                getField().setDrawField(true);
+                                                getField().getDrawField().notify();
+                                            } // synchronized 
+                                        } // if neighbor is still fox
+                                    } // synchronize neighboring fox
+                                } // synchronize yourself
+                                
+                            } // if you have hound neighbors
+                            else
+                            {
+                                // Prioritize the cells to figure out what
+                                // to lock first
+                                // Will eventually lock
+                                // Ourselves
+                                cellsToLock.add(getField().getOccupantAt(getXCoord(), getYCoord()));
+                                
+                                // The fox we plan to eat
+                                cellsToLock.add(neighboringFoxes.get(randomFoxIndex));
+                                
+                                
+                                // Lock the first cell
+                                synchronized (cellsToLock.poll())
+                                {
+                                    // Since at this point, we're locking, 
+                                    // then this means we've chosen to 
+                                    // attempt an action. 
+                                    actionAttempted = true;
+                                    
+                                    // Lock the second cell
+                                    synchronized (cellsToLock.poll())
+                                    {
+                                        // Make sure that there's still a fox in 
+                                        // the cell
+                                        if (neighboringFoxes.get(randomFoxIndex)
+                                                .getOccupant() instanceof Fox)
+                                        {
+                                            // Eat!!!
+                                            eats();
+                                            System.out.println("Eat fox");
+                                            
+                                            // Kill the fox thread
+                                            neighboringFoxes.get(randomFoxIndex)
+                                                    .getOccupant().interrupt();
+                                            
+                                            // Remove fox from the field 
+                                            neighboringFoxes.get(randomFoxIndex).setOccupant(null);
+    
+                                            // If there is a hound to mate with, 
+                                            // make a baby
+                                            if (neighboringHounds.size() > 0)
+                                            {
+                                                
                                                 if (neighboringHounds.get(0).getOccupant() instanceof Hound)
                                                 {
                                                     // Create a new baby hound
@@ -243,7 +335,7 @@ public class Hound extends FieldOccupant
                                             } // synchronied
                                             
                 
-                                        } // if 
+                                        } // if neighbor is still fox
 
                                         // Signal the field to redraw itself
                                         synchronized (getField().getDrawField())
@@ -251,9 +343,9 @@ public class Hound extends FieldOccupant
                                             getField().setDrawField(true);
                                             getField().getDrawField().notify();
                                         } // synchronized 
-                                    } // if neighbor is still fox
-                                } // synchronize neighboring fox
-                            } // synchronize yourself
+                                    } // synchronize neighboring fox
+                                } // synchronize yourself
+                            } // else
                             
                         } // if we have fox neighbors
                     } // if we have a fox neighbor
@@ -275,8 +367,7 @@ public class Hound extends FieldOccupant
 
                         // See if there are any hound neighbors of the
                         // neighboring cell that aren't us
-                        while (!hasHoundNeighbors
-                                && j < neighborsOfNeighbors.size())
+                        while (j < neighborsOfNeighbors.size())
                         {
                             // If there's a neighbor of the empty cell that
                             // is a hound that isn't us
@@ -295,14 +386,15 @@ public class Hound extends FieldOccupant
                                 System.out.println(getField().getOccupantAt(getXCoord(), getYCoord()));
                                 // We've found another hound neighbor to
                                 // mate with
-                                hasHoundNeighbors = true;
-                                System.out.println("True");
+                            
+                                neighboringHounds.add(neighborsOfNeighbors.get(j));
+                          
                             } // if
                             j++;
                         } // while
 
                         // If there are Hound neighbors
-                        if (hasHoundNeighbors)
+                        if (neighboringHounds.size() > 0)
                         {
                             // Iterate through all of the neighbor cells
                             // to find foxes
@@ -326,63 +418,81 @@ public class Hound extends FieldOccupant
                                 randomFoxIndex = random.nextInt(
                                         neighboringFoxes.size());
 
+                                // Prioritize the cells to figure out what
+                                // to lock first
+                                // Will eventually lock
+                                // The fox we plan to eat
+                                cellsToLock.add(neighboringFoxes.get(randomFoxIndex));
+                                // Get the null cell
+                                cellsToLock.add(neighborCells.get(0));
+                                // Lock ourselves
+                                cellsToLock.add(getField().getOccupantAt(getXCoord(), getYCoord()));
+                                // Lock the hound we want to breed with
+                                cellsToLock.add(neighboringHounds.get(0));
+                                
                                 // Lock the fox cell so no one else can eat
                                 // it
-                                synchronized (neighboringFoxes.get(randomFoxIndex))
+                                synchronized (cellsToLock.poll())
                                 {
                                     // At this point, we've locked cells
                                     // so we're commited to attempting 
                                     // the action
                                     actionAttempted = true;
                                     
-                                    // Make sure there's still a fox in the
-                                    // cell
-                                    if (neighboringFoxes.get(randomFoxIndex)
-                                            .getOccupant() instanceof Fox)
+                                    synchronized(cellsToLock.poll())
                                     {
-                                        synchronized(neighborCells.get(0))
+                                        synchronized(cellsToLock.poll())
                                         {
-                                            if (neighborCells.get(0).getOccupant() == null)
+                                            synchronized(cellsToLock.poll())
                                             {
-                                            
-                                                // Create a new baby hound 
-                                                // in empty cell
-                                                neighborCells.get(0)
-                                                        .setOccupant(
-                                                        new Hound(
-                                                        neighborCells.get(0)
-                                                        .getXCoord(),
-                                                        neighborCells.get(0)
-                                                        .getYCoord(),
-                                                        getPhaser(),
-                                                        getField()));
-
-                                                // Start the new thread
-                                                neighborCells.get(0)
-                                                        .getOccupant().start();
-
+                                                // Make sure there's still a fox in the
+                                                // cell
+                                                if (neighboringFoxes.get(randomFoxIndex)
+                                                        .getOccupant() instanceof Fox)
+                                                {
                                                 
-                                            } // if still empty cell
-                                        } // sychronize empty cell 
-                                        
-                                        // EAT
-                                        eats();
-                                        System.out.println("Eat fox");
-                                        
-                                        // Kill the fox thread
-                                        neighboringFoxes.get(randomFoxIndex)
-                                                .getOccupant().interrupt();
-                                        
-                                        // Set fox to be null on field
-                                        neighboringFoxes.get(randomFoxIndex).setOccupant(null);
-                                        
-                                        // Signal the field to redraw itself
-                                        synchronized (getField().
-                                                getDrawField())
-                                        {
-                                            getField().setDrawField(true);
-                                            getField().getDrawField().notify();
-                                        } // synchronize draw field
+                                                    if (neighborCells.get(0).getOccupant() == null)
+                                                    {
+                                                    
+                                                        // Create a new baby hound 
+                                                        // in empty cell
+                                                        neighborCells.get(0)
+                                                                .setOccupant(
+                                                                new Hound(
+                                                                neighborCells.get(0)
+                                                                .getXCoord(),
+                                                                neighborCells.get(0)
+                                                                .getYCoord(),
+                                                                getPhaser(),
+                                                                getField()));
+        
+                                                        // Start the new thread
+                                                        neighborCells.get(0)
+                                                                .getOccupant().start();
+        
+                                                        
+                                                    } // if still empty cell
+                                                } // sychronize empty cell 
+                                                
+                                                // EAT
+                                                eats();
+                                                
+                                                // Kill the fox thread
+                                                neighboringFoxes.get(randomFoxIndex)
+                                                        .getOccupant().interrupt();
+                                                
+                                                // Set fox to be null on field
+                                                neighboringFoxes.get(randomFoxIndex).setOccupant(null);
+                                                
+                                                // Signal the field to redraw itself
+                                                synchronized (getField().
+                                                        getDrawField())
+                                                {
+                                                    getField().setDrawField(true);
+                                                    getField().getDrawField().notify();
+                                                } // synchronize draw field
+                                            }
+                                        }
           
                                     } // if neighboring cell of empty holds fox
                                 } // synchronize fox cell
@@ -409,9 +519,10 @@ public class Hound extends FieldOccupant
                     // If we've died, kill the thread
                     Thread.currentThread().interrupt();
                 }
-
+                
             }
-        } catch (InterruptedException e)
+            
+        } catch(InterruptedException e)
         {
             synchronized (getField().getOccupantAt(getXCoord(), 
                     getYCoord()))
@@ -419,12 +530,13 @@ public class Hound extends FieldOccupant
                 System.out.println("Hound death");
                 getField().getOccupantAt(getXCoord(), 
                         getYCoord()).setOccupant(null);
-                // Make the field draw again since there's been a change
-                synchronized (getField().getDrawField())
-                {
-                    getField().setDrawField(true);
-                    getField().getDrawField().notify();
-                }
+                
+            }
+            // Make the field draw again since there's been a change
+            synchronized (getField().getDrawField())
+            {
+                getField().setDrawField(true);
+                getField().getDrawField().notify();
             }
         }
     }
